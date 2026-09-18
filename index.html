@@ -1,29 +1,1013 @@
-Crie uma aplicação web responsiva em HTML, CSS e JavaScript que funcione como um dashboard financeiro no estilo "Barbiecore" (com tema rosa e design estético/fofo).
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-**Estrutura da página:**
+    <title>Planilha Financeira 💗</title>
 
-1. **Cabeçalho:**
-   - Título estilizado: "Planilha Financeira" com estética fofa/rosa.
-   - Cards de resumo no topo mostrando "Média de Gastos Variáveis" e "Balanço Fixos + Variáveis" com valores destacados em R$.
+    <!-- Fonte -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-2. **Gráficos (usando a biblioteca Chart.js):**
-   - Lado a lado: Dois gráficos no formato Donut (Rosca).
-   - O primeiro mostrando a distribuição percentual das categorias.
-   - O segundo mostrando a distribuição por categorias específicas com legenda ao centro (Casa, Educação, Farmácia, Fast food, Mercado, Trabalho, Transporte, Vestuário).
-   - Paleta de cores dos gráficos em tons de rosa, lilás e pastel.
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-3. **Tabela de Gastos Variáveis:**
-   - Colunas: Nome, Forma de Pagamento (Dropdown: Pix, Débito, Crédito), Categoria (Dropdown estilizado com tags coloridas), Valor (R$) e Status (Checkbox "Pago?").
-   - Adicione linhas interativas para entrada de dados.
-   - Linha final com o cálculo automático do TOTAL em R$.
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
-4. **Tabela de Assinaturas/Fixos:**
-   - Tabela menor para assinaturas (Ex: Netflix, Spotify, Nuvem).
-   - Colunas: Descrição, Valor e Checkbox "Pago?".
-   - Totalizador automático no rodapé da tabela.
+        :root {
+            --rosa-claro: #ffe6f0;
+            --rosa: #ff66b2;
+            --rosa-escuro: #d87093;
+            --magenta: #d63384;
+            --branco: #ffffff;
+            --lilas: #c9a7eb;
+            --texto: #71334e;
+            --cinza: #9b7182;
+            --verde: #78c7a3;
+            --sombra: 0 8px 25px rgba(216, 112, 147, 0.15);
+        }
 
-5. **Estilização (CSS):**
-   - Utilize uma paleta de cores rosa pastel, magenta e branco (#ffe6f0, #ff66b2, #ffffff, #d87093).
-   - Fontes arredondadas e modernas (ex: 'Poppins' ou 'Nunito').
-   - Bordas arredondadas (border-radius), sombras suaves e layout limpo.
-   - Adicione suporte a cálculo automático dos totais dinamicamente via JS ao alterar qualquer valor.
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: linear-gradient(135deg, #fff8fb, #ffe6f0);
+            color: var(--texto);
+            min-height: 100vh;
+        }
+
+        .container {
+            width: min(1400px, 94%);
+            margin: auto;
+            padding: 35px 0 50px;
+        }
+
+        /* CABEÇALHO */
+        header {
+            margin-bottom: 28px;
+        }
+
+        .title-area {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .title-area h1 {
+            font-family: 'Poppins', sans-serif;
+            font-size: clamp(2rem, 4vw, 3.3rem);
+            color: var(--magenta);
+            font-weight: 800;
+            letter-spacing: -1px;
+        }
+
+        .title-area h1 span {
+            display: block;
+            font-size: 1rem;
+            color: var(--rosa-escuro);
+            font-weight: 600;
+            letter-spacing: 0;
+        }
+
+        .heart {
+            font-size: 50px;
+            filter: drop-shadow(0 5px 5px rgba(214, 51, 132, .15));
+        }
+
+        /* CARDS */
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .summary-card {
+            background: var(--branco);
+            border-radius: 22px;
+            padding: 25px;
+            box-shadow: var(--sombra);
+            border: 1px solid #ffd5e6;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .summary-card::after {
+            content: "♡";
+            position: absolute;
+            right: 20px;
+            top: 5px;
+            font-size: 70px;
+            color: #ffe1ed;
+        }
+
+        .summary-card h3 {
+            font-size: 14px;
+            color: var(--cinza);
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .summary-card .value {
+            font-family: 'Poppins', sans-serif;
+            font-size: clamp(1.7rem, 3vw, 2.4rem);
+            font-weight: 800;
+            color: var(--magenta);
+        }
+
+        /* GRÁFICOS */
+        .charts-section {
+            margin-top: 25px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .chart-card {
+            background: var(--branco);
+            border-radius: 22px;
+            padding: 25px;
+            box-shadow: var(--sombra);
+            min-height: 380px;
+        }
+
+        .section-title {
+            font-family: 'Poppins', sans-serif;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--magenta);
+            margin-bottom: 20px;
+        }
+
+        .chart-wrapper {
+            position: relative;
+            height: 300px;
+        }
+
+        /* TABELAS */
+        .table-card {
+            background: var(--branco);
+            margin-top: 25px;
+            border-radius: 22px;
+            padding: 25px;
+            box-shadow: var(--sombra);
+            overflow-x: auto;
+        }
+
+        .table-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .table-header h2 {
+            font-family: 'Poppins', sans-serif;
+            color: var(--magenta);
+            font-size: 20px;
+        }
+
+        button {
+            border: none;
+            background: var(--rosa);
+            color: white;
+            font-family: 'Nunito', sans-serif;
+            font-weight: 800;
+            padding: 11px 18px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: .2s;
+            box-shadow: 0 5px 12px rgba(255, 102, 178, .2);
+        }
+
+        button:hover {
+            background: var(--magenta);
+            transform: translateY(-1px);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 720px;
+        }
+
+        th {
+            background: var(--rosa-claro);
+            color: var(--rosa-escuro);
+            font-size: 13px;
+            text-align: left;
+            padding: 14px;
+            font-weight: 800;
+        }
+
+        th:first-child {
+            border-radius: 12px 0 0 12px;
+        }
+
+        th:last-child {
+            border-radius: 0 12px 12px 0;
+        }
+
+        td {
+            padding: 12px 10px;
+            border-bottom: 1px solid #f8dce8;
+        }
+
+        input,
+        select {
+            width: 100%;
+            border: 1px solid #f1c8da;
+            background: #fffafd;
+            border-radius: 10px;
+            padding: 10px;
+            outline: none;
+            color: var(--texto);
+            font-family: 'Nunito', sans-serif;
+            font-size: 14px;
+            transition: .2s;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: var(--rosa);
+            box-shadow: 0 0 0 3px rgba(255, 102, 178, .1);
+        }
+
+        select {
+            cursor: pointer;
+        }
+
+        .value-input {
+            text-align: right;
+        }
+
+        .checkbox-cell {
+            text-align: center;
+        }
+
+        .checkbox {
+            width: 20px;
+            height: 20px;
+            accent-color: var(--rosa);
+            cursor: pointer;
+        }
+
+        /* TAGS */
+        .category-select {
+            font-weight: 700;
+        }
+
+        .category-tag {
+            display: inline-block;
+            padding: 5px 9px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 800;
+            background: var(--rosa-claro);
+            color: var(--magenta);
+        }
+
+        .delete-btn {
+            background: #fff0f5;
+            color: #d85b85;
+            box-shadow: none;
+            padding: 7px 10px;
+        }
+
+        .delete-btn:hover {
+            background: #ffdbe8;
+            color: #b72c5f;
+        }
+
+        /* TOTAL */
+        tfoot td {
+            background: #fff7fa;
+            font-weight: 800;
+            color: var(--magenta);
+            padding: 16px;
+            border-bottom: none;
+        }
+
+        .total-value {
+            text-align: right;
+            font-family: 'Poppins', sans-serif;
+            font-size: 18px;
+        }
+
+        /* STATUS */
+        tr.paid {
+            opacity: .65;
+        }
+
+        tr.paid input[type="text"],
+        tr.paid input[type="number"] {
+            text-decoration: line-through;
+        }
+
+        /* RESPONSIVIDADE */
+        @media (max-width: 850px) {
+            .charts-section {
+                grid-template-columns: 1fr;
+            }
+
+            .summary {
+                grid-template-columns: 1fr;
+            }
+
+            .title-area {
+                align-items: flex-start;
+            }
+
+            .heart {
+                font-size: 35px;
+            }
+
+            .chart-card {
+                min-height: 350px;
+            }
+        }
+
+        @media (max-width: 500px) {
+            .container {
+                width: 92%;
+                padding-top: 20px;
+            }
+
+            .title-area h1 {
+                font-size: 2rem;
+            }
+
+            .summary-card {
+                padding: 20px;
+            }
+
+            .table-card,
+            .chart-card {
+                padding: 18px;
+                border-radius: 17px;
+            }
+
+            .table-header {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- CABEÇALHO -->
+    <header>
+        <div class="title-area">
+            <div>
+                <h1>Planilha Financeira</h1>
+                <span>Organize seu dinheiro com carinho ♡</span>
+            </div>
+
+            <div class="heart">🎀</div>
+        </div>
+
+        <div class="summary">
+
+            <div class="summary-card">
+                <h3>Média de Gastos Variáveis</h3>
+                <div class="value" id="averageValue">R$ 0,00</div>
+            </div>
+
+            <div class="summary-card">
+                <h3>Balanço Fixos + Variáveis</h3>
+                <div class="value" id="balanceValue">R$ 0,00</div>
+            </div>
+
+        </div>
+    </header>
+
+
+    <!-- GRÁFICOS -->
+    <section class="charts-section">
+
+        <div class="chart-card">
+            <h2 class="section-title">Distribuição dos Gastos 💗</h2>
+
+            <div class="chart-wrapper">
+                <canvas id="generalChart"></canvas>
+            </div>
+        </div>
+
+
+        <div class="chart-card">
+            <h2 class="section-title">Gastos por Categoria 🎀</h2>
+
+            <div class="chart-wrapper">
+                <canvas id="categoryChart"></canvas>
+            </div>
+        </div>
+
+    </section>
+
+
+    <!-- GASTOS VARIÁVEIS -->
+    <section class="table-card">
+
+        <div class="table-header">
+            <h2>Gastos Variáveis ✨</h2>
+            <button onclick="addVariableRow()">+ Adicionar gasto</button>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Forma de Pagamento</th>
+                    <th>Categoria</th>
+                    <th>Valor (R$)</th>
+                    <th>Pago?</th>
+                    <th></th>
+                </tr>
+            </thead>
+
+            <tbody id="variableBody">
+
+                <tr>
+                    <td>
+                        <input type="text" placeholder="Ex: Restaurante">
+                    </td>
+
+                    <td>
+                        <select>
+                            <option>Pix</option>
+                            <option>Débito</option>
+                            <option>Crédito</option>
+                        </select>
+                    </td>
+
+                    <td>
+                        <select class="category-select">
+                            <option>Casa</option>
+                            <option>Educação</option>
+                            <option>Farmácia</option>
+                            <option>Fast food</option>
+                            <option>Mercado</option>
+                            <option>Trabalho</option>
+                            <option>Transporte</option>
+                            <option>Vestuário</option>
+                        </select>
+                    </td>
+
+                    <td>
+                        <input class="value-input variable-value"
+                               type="number"
+                               min="0"
+                               step="0.01"
+                               placeholder="0,00">
+                    </td>
+
+                    <td class="checkbox-cell">
+                        <input class="checkbox paid-checkbox" type="checkbox">
+                    </td>
+
+                    <td>
+                        <button class="delete-btn" onclick="deleteRow(this)">×</button>
+                    </td>
+                </tr>
+
+            </tbody>
+
+            <tfoot>
+                <tr>
+                    <td colspan="3">TOTAL</td>
+                    <td colspan="3" class="total-value" id="variableTotal">
+                        R$ 0,00
+                    </td>
+                </tr>
+            </tfoot>
+
+        </table>
+    </section>
+
+
+    <!-- ASSINATURAS / FIXOS -->
+    <section class="table-card">
+
+        <div class="table-header">
+            <h2>Assinaturas / Gastos Fixos 💕</h2>
+            <button onclick="addFixedRow()">+ Adicionar</button>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Descrição</th>
+                    <th>Valor (R$)</th>
+                    <th>Pago?</th>
+                    <th></th>
+                </tr>
+            </thead>
+
+            <tbody id="fixedBody">
+
+                <tr>
+                    <td>
+                        <input type="text" value="Netflix">
+                    </td>
+
+                    <td>
+                        <input class="value-input fixed-value"
+                               type="number"
+                               min="0"
+                               step="0.01"
+                               value="0">
+                    </td>
+
+                    <td class="checkbox-cell">
+                        <input class="checkbox paid-checkbox" type="checkbox">
+                    </td>
+
+                    <td>
+                        <button class="delete-btn" onclick="deleteRow(this)">×</button>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>
+                        <input type="text" value="Spotify">
+                    </td>
+
+                    <td>
+                        <input class="value-input fixed-value"
+                               type="number"
+                               min="0"
+                               step="0.01"
+                               value="0">
+                    </td>
+
+                    <td class="checkbox-cell">
+                        <input class="checkbox paid-checkbox" type="checkbox">
+                    </td>
+
+                    <td>
+                        <button class="delete-btn" onclick="deleteRow(this)">×</button>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td>
+                        <input type="text" value="Nuvem">
+                    </td>
+
+                    <td>
+                        <input class="value-input fixed-value"
+                               type="number"
+                               min="0"
+                               step="0.01"
+                               value="0">
+                    </td>
+
+                    <td class="checkbox-cell">
+                        <input class="checkbox paid-checkbox" type="checkbox">
+                    </td>
+
+                    <td>
+                        <button class="delete-btn" onclick="deleteRow(this)">×</button>
+                    </td>
+                </tr>
+
+            </tbody>
+
+            <tfoot>
+                <tr>
+                    <td>TOTAL</td>
+                    <td colspan="3" class="total-value" id="fixedTotal">
+                        R$ 0,00
+                    </td>
+                </tr>
+            </tfoot>
+
+        </table>
+
+    </section>
+
+</div>
+
+
+<script>
+
+    /* =========================
+       FORMATAÇÃO
+    ========================= */
+
+    function formatMoney(value) {
+        return value.toLocaleString('pt-BR', {
+            style: 'currency',
+            currency: 'BRL'
+        });
+    }
+
+
+    /* =========================
+       TOTALIZADORES
+    ========================= */
+
+    function calculateTotals() {
+
+        let variableTotal = 0;
+        let fixedTotal = 0;
+
+        document.querySelectorAll('.variable-value')
+            .forEach(input => {
+                variableTotal += Number(input.value) || 0;
+            });
+
+        document.querySelectorAll('.fixed-value')
+            .forEach(input => {
+                fixedTotal += Number(input.value) || 0;
+            });
+
+
+        const variableInputs =
+            [...document.querySelectorAll('.variable-value')];
+
+        const values = variableInputs
+            .map(input => Number(input.value) || 0)
+            .filter(value => value > 0);
+
+        let average = 0;
+
+        if (values.length > 0) {
+            average =
+                values.reduce((a, b) => a + b, 0) / values.length;
+        }
+
+
+        document.getElementById('variableTotal').textContent =
+            formatMoney(variableTotal);
+
+        document.getElementById('fixedTotal').textContent =
+            formatMoney(fixedTotal);
+
+        document.getElementById('averageValue').textContent =
+            formatMoney(average);
+
+        document.getElementById('balanceValue').textContent =
+            formatMoney(variableTotal + fixedTotal);
+
+
+        updateCharts();
+    }
+
+
+    /* =========================
+       ADICIONAR GASTO
+    ========================= */
+
+    function addVariableRow() {
+
+        const tbody =
+            document.getElementById('variableBody');
+
+        const row = document.createElement('tr');
+
+        row.innerHTML = `
+            <td>
+                <input type="text" placeholder="Nome do gasto">
+            </td>
+
+            <td>
+                <select>
+                    <option>Pix</option>
+                    <option>Débito</option>
+                    <option>Crédito</option>
+                </select>
+            </td>
+
+            <td>
+                <select class="category-select">
+                    <option>Casa</option>
+                    <option>Educação</option>
+                    <option>Farmácia</option>
+                    <option>Fast food</option>
+                    <option>Mercado</option>
+                    <option>Trabalho</option>
+                    <option>Transporte</option>
+                    <option>Vestuário</option>
+                </select>
+            </td>
+
+            <td>
+                <input class="value-input variable-value"
+                       type="number"
+                       min="0"
+                       step="0.01"
+                       placeholder="0,00">
+            </td>
+
+            <td class="checkbox-cell">
+                <input class="checkbox paid-checkbox"
+                       type="checkbox">
+            </td>
+
+            <td>
+                <button class="delete-btn"
+                        onclick="deleteRow(this)">×</button>
+            </td>
+        `;
+
+        tbody.appendChild(row);
+
+        attachEvents(row);
+        calculateTotals();
+    }
+
+
+    /* =========================
+       ADICIONAR FIXO
+    ========================= */
+
+    function addFixedRow() {
+
+        const tbody =
+            document.getElementById('fixedBody');
+
+        const row = document.createElement('tr');
+
+        row.innerHTML = `
+            <td>
+                <input type="text"
+                       placeholder="Descrição">
+            </td>
+
+            <td>
+                <input class="value-input fixed-value"
+                       type="number"
+                       min="0"
+                       step="0.01"
+                       placeholder="0,00">
+            </td>
+
+            <td class="checkbox-cell">
+                <input class="checkbox paid-checkbox"
+                       type="checkbox">
+            </td>
+
+            <td>
+                <button class="delete-btn"
+                        onclick="deleteRow(this)">×</button>
+            </td>
+        `;
+
+        tbody.appendChild(row);
+
+        attachEvents(row);
+        calculateTotals();
+    }
+
+
+    /* =========================
+       EXCLUIR
+    ========================= */
+
+    function deleteRow(button) {
+
+        button.closest('tr').remove();
+
+        calculateTotals();
+    }
+
+
+    /* =========================
+       STATUS PAGO
+    ========================= */
+
+    function updatePaidStatus(checkbox) {
+
+        const row = checkbox.closest('tr');
+
+        if (checkbox.checked) {
+            row.classList.add('paid');
+        } else {
+            row.classList.remove('paid');
+        }
+    }
+
+
+    /* =========================
+       EVENTOS
+    ========================= */
+
+    function attachEvents(row) {
+
+        row.querySelectorAll('input, select')
+            .forEach(element => {
+
+                element.addEventListener('input', calculateTotals);
+                element.addEventListener('change', calculateTotals);
+
+            });
+
+        const checkbox =
+            row.querySelector('.paid-checkbox');
+
+        if (checkbox) {
+
+            checkbox.addEventListener('change', function () {
+
+                updatePaidStatus(this);
+
+            });
+
+        }
+    }
+
+
+    document.querySelectorAll('tbody tr')
+        .forEach(row => attachEvents(row));
+
+
+    /* =========================
+       GRÁFICOS
+    ========================= */
+
+    const categories = [
+        'Casa',
+        'Educação',
+        'Farmácia',
+        'Fast food',
+        'Mercado',
+        'Trabalho',
+        'Transporte',
+        'Vestuário'
+    ];
+
+
+    let generalChart;
+    let categoryChart;
+
+
+    function getCategoryData() {
+
+        const totals = {};
+
+        categories.forEach(category => {
+            totals[category] = 0;
+        });
+
+
+        document.querySelectorAll('#variableBody tr')
+            .forEach(row => {
+
+                const category =
+                    row.querySelector('.category-select')?.value;
+
+                const value =
+                    Number(
+                        row.querySelector('.variable-value')?.value
+                    ) || 0;
+
+                if (category) {
+                    totals[category] += value;
+                }
+
+            });
+
+
+        return totals;
+    }
+
+
+    function updateCharts() {
+
+        const data = getCategoryData();
+
+        const values =
+            categories.map(category => data[category]);
+
+
+        if (generalChart) {
+            generalChart.destroy();
+        }
+
+        if (categoryChart) {
+            categoryChart.destroy();
+        }
+
+
+        const chartColors = [
+            '#ff66b2',
+            '#d87093',
+            '#c9a7eb',
+            '#ffb6d5',
+            '#f7a6c2',
+            '#b993d6',
+            '#ffc9df',
+            '#e9b8d0'
+        ];
+
+
+        /* GRÁFICO 1 */
+
+        generalChart = new Chart(
+            document.getElementById('generalChart'),
+            {
+                type: 'doughnut',
+
+                data: {
+                    labels: categories,
+                    datasets: [{
+                        data: values,
+                        backgroundColor: chartColors,
+                        borderWidth: 3,
+                        borderColor: '#ffffff',
+                        hoverOffset: 8
+                    }]
+                },
+
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+
+                    cutout: '65%',
+
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                font: {
+                                    family: 'Nunito',
+                                    weight: '700'
+                                },
+                                padding: 15
+                            }
+                        }
+                    }
+                }
+            }
+        );
+
+
+        /* GRÁFICO 2 */
+
+        categoryChart = new Chart(
+            document.getElementById('categoryChart'),
+            {
+                type: 'doughnut',
+
+                data: {
+                    labels: categories,
+                    datasets: [{
+                        data: values,
+                        backgroundColor: chartColors,
+                        borderWidth: 3,
+                        borderColor: '#ffffff',
+                        hoverOffset: 8
+                    }]
+                },
+
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+
+                    cutout: '72%',
+
+                    plugins: {
+                        legend: {
+                            position: 'right',
+
+                            labels: {
+                                font: {
+                                    family: 'Nunito',
+                                    weight: '700'
+                                },
+                                padding: 12,
+                                usePointStyle: true,
+                                pointStyle: 'circle'
+                            }
+                        }
+                    }
+                }
+            }
+        );
+    }
+
+
+    /* INICIALIZAÇÃO */
+
+    calculateTotals();
+
+</script>
+
+</body>
+</html>
